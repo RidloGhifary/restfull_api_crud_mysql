@@ -30,4 +30,15 @@ app.post("/products", async (req, res) => {
   res.status(200).json({ message: "Success added data", product });
 });
 
+app.delete("/products/:id", async (req, res) => {
+  const productId = req.params.id;
+  await prisma.products.delete({
+    where: {
+      id: productId,
+    },
+  });
+
+  res.status(200).json({ messages: "Success deleted data" });
+});
+
 app.listen(PORT, () => console.log("Server Listening on port: " + PORT));
