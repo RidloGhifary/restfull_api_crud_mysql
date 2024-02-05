@@ -12,7 +12,9 @@ const prisma = new PrismaClient();
 
 app.get("/products", async (req, res) => {
   const products = await prisma.products.findMany();
-  res.json(products);
+  res
+    .status(200)
+    .json({ status: 200, message: "Success getting datas", datas: products });
 });
 
 app.post("/products", async (req, res) => {
@@ -28,6 +30,25 @@ app.post("/products", async (req, res) => {
   });
 
   res.status(200).json({ message: "Success added data", product });
+});
+
+app.put("/products/:id", async (req, res) => {
+  const productId = req.params.id;
+  const productsData = req.body;
+
+  const product = await prisma.products.update({
+    where: {
+      id: productId,
+    },
+    data: {
+      name: productsData.name,
+      description: productsData.description,
+      price: productsData.price,
+      image: productsData.image,
+    },
+  });
+
+  res.status(200).json({ message: "Success update data", product });
 });
 
 app.delete("/products/:id", async (req, res) => {
