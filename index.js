@@ -17,6 +17,25 @@ app.get("/products", async (req, res) => {
     .json({ status: 200, message: "Success getting datas", datas: products });
 });
 
+app.get("/products/:id", async (req, res) => {
+  const productId = req.params.id;
+
+  const product = await prisma.products.findUnique({
+    where: {
+      id: productId,
+    },
+  });
+
+  if (!productId)
+    res
+      .status(404)
+      .json({ status: 404, message: `Cannot find id ${productId}` });
+
+  res
+    .status(200)
+    .json({ status: 200, message: "Success get product", product });
+});
+
 app.post("/products", async (req, res) => {
   const productsData = req.body;
 
