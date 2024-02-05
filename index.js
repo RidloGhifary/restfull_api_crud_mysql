@@ -36,6 +36,38 @@ app.put("/products/:id", async (req, res) => {
   const productId = req.params.id;
   const productsData = req.body;
 
+  if (
+    !(
+      productsData.name &&
+      productsData.description &&
+      productsData.price &&
+      productsData.image
+    )
+  ) {
+    res
+      .status(400)
+      .json({ status: 400, message: "Something data required is missing" });
+  }
+
+  const product = await prisma.products.update({
+    where: {
+      id: productId,
+    },
+    data: {
+      name: productsData.name,
+      description: productsData.description,
+      price: productsData.price,
+      image: productsData.image,
+    },
+  });
+
+  res.status(200).json({ message: "Success update data", product });
+});
+
+app.patch("/products/:id", async (req, res) => {
+  const productId = req.params.id;
+  const productsData = req.body;
+
   const product = await prisma.products.update({
     where: {
       id: productId,
