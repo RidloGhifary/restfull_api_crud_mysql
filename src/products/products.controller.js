@@ -1,23 +1,16 @@
 const express = require("express");
-const { PrismaClient } = require("@prisma/client");
-const dotenv = require("dotenv");
+const prisma = require("../database/prisma.js");
 
-dotenv.config();
-const PORT = process.env.PORT;
-const app = express();
+const router = express.Router();
 
-app.use(express.json());
-
-const prisma = new PrismaClient();
-
-app.get("/products", async (req, res) => {
+router.get("/", async (req, res) => {
   const products = await prisma.products.findMany();
   res
     .status(200)
     .json({ status: 200, message: "Success getting datas", datas: products });
 });
 
-app.get("/products/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   const productId = req.params.id;
 
   const product = await prisma.products.findUnique({
@@ -36,7 +29,7 @@ app.get("/products/:id", async (req, res) => {
     .json({ status: 200, message: "Success get product", product });
 });
 
-app.post("/products", async (req, res) => {
+router.post("/", async (req, res) => {
   const productsData = req.body;
 
   const product = await prisma.products.create({
@@ -51,7 +44,7 @@ app.post("/products", async (req, res) => {
   res.status(200).json({ message: "Success added data", product });
 });
 
-app.put("/products/:id", async (req, res) => {
+router.put("/:id", async (req, res) => {
   const productId = req.params.id;
   const productsData = req.body;
 
@@ -83,7 +76,7 @@ app.put("/products/:id", async (req, res) => {
   res.status(200).json({ message: "Success update data", product });
 });
 
-app.patch("/products/:id", async (req, res) => {
+router.patch("/:id", async (req, res) => {
   const productId = req.params.id;
   const productsData = req.body;
 
@@ -102,7 +95,7 @@ app.patch("/products/:id", async (req, res) => {
   res.status(200).json({ message: "Success update data", product });
 });
 
-app.delete("/products/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const productId = req.params.id;
   await prisma.products.delete({
     where: {
@@ -113,4 +106,4 @@ app.delete("/products/:id", async (req, res) => {
   res.status(200).json({ messages: "Success deleted data" });
 });
 
-app.listen(PORT, () => console.log("Server Listening on port: " + PORT));
+module.exports = router;
