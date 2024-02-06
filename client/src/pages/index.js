@@ -9,16 +9,10 @@ import {
   TableContainer,
   Spinner,
 } from "@chakra-ui/react";
-import { useProduct } from "@/features/product/useProduct";
-import { useEffect, useState } from "react";
+import { useFetchProduct } from "@/features/product/useProduct";
 
 export default function Home() {
-  const { products, isLoading } = useProduct();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { products, isLoading } = useFetchProduct();
 
   const renderDataProducts = () => {
     return products?.datas.map((product, index) => {
@@ -44,23 +38,27 @@ export default function Home() {
       </Head>
       <main>
         <TableContainer>
-          {isClient ? (
-            <Table variant="striped">
-              <Thead>
+          <Table variant="striped">
+            <Thead>
+              <Tr>
+                <Th>No</Th>
+                <Th>Name</Th>
+                <Th>Price</Th>
+                <Th>Description</Th>
+                <Th>Image</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {renderDataProducts()}
+              {isLoading && (
                 <Tr>
-                  <Th>No</Th>
-                  <Th>Name</Th>
-                  <Th>Price</Th>
-                  <Th>Description</Th>
-                  <Th>Image</Th>
+                  <Td>
+                    <Spinner />
+                  </Td>
                 </Tr>
-              </Thead>
-              <Tbody>
-                {renderDataProducts()}
-                {isLoading && <Spinner />}
-              </Tbody>
-            </Table>
-          ) : null}
+              )}
+            </Tbody>
+          </Table>
         </TableContainer>
       </main>
     </>
