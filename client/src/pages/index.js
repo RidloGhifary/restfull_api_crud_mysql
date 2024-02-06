@@ -1,46 +1,38 @@
 import Head from "next/head";
 import {
-  Container,
   Table,
   Thead,
   Tbody,
   Tr,
   Th,
   Td,
-  TableCaption,
   TableContainer,
+  Spinner,
 } from "@chakra-ui/react";
+import { useProduct } from "@/features/product/useProduct";
 import { useEffect, useState } from "react";
-import { axiosInstance } from "@/lib/axios";
-export default function Home() {
-  const [products, setProducts] = useState([]);
 
-  const fetchingData = async () => {
-    try {
-      const { data } = await axiosInstance.get("/products");
-      setProducts(data.datas);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+export default function Home() {
+  const { products, isLoading } = useProduct();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const renderDataProducts = () => {
-    return products.map((product) => {
+    return products?.datas.map((product, index) => {
       return (
         <Tr key={product.id}>
-          <Td>{product.id}</Td>
+          <Td>{index + 1}</Td>
           <Td>{product.name}</Td>
-          <Td>{product.description}</Td>
           <Td>Rp. {Number(product.price).toLocaleString("id-ID")}</Td>
+          <Td>{product.description}</Td>
           <Td>{product.image}</Td>
         </Tr>
       );
     });
   };
-
-  useEffect(() => {
-    fetchingData();
-  }, []);
 
   return (
     <>
@@ -52,18 +44,23 @@ export default function Home() {
       </Head>
       <main>
         <TableContainer>
-          <Table variant="striped">
-            <Thead>
-              <Tr>
-                <Th>Id</Th>
-                <Th>name</Th>
-                <Th>description</Th>
-                <Th>price</Th>
-                <Th>image</Th>
-              </Tr>
-            </Thead>
-            <Tbody>{renderDataProducts()}</Tbody>
-          </Table>
+          {isClient ? (
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th>No</Th>
+                  <Th>Name</Th>
+                  <Th>Price</Th>
+                  <Th>Description</Th>
+                  <Th>Image</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {renderDataProducts()}
+                {isLoading && <Spinner />}
+              </Tbody>
+            </Table>
+          ) : null}
         </TableContainer>
       </main>
     </>
