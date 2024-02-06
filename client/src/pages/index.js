@@ -1,18 +1,41 @@
 import Head from "next/head";
-import { Container, Heading } from "@chakra-ui/react";
-import axios from "axios";
-import { useEffect } from "react";
-
+import {
+  Container,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { axiosInstance } from "@/lib/axios";
 export default function Home() {
-  const localUrl = process.env.localUrl;
+  const [products, setProducts] = useState([]);
 
   const fetchingData = async () => {
     try {
-      const { data } = await axios.get(`${localUrl}/products`);
-      console.log(data);
+      const { data } = await axiosInstance.get("/products");
+      setProducts(data.datas);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const renderDataProducts = () => {
+    return products.map((product) => {
+      return (
+        <Tr key={product.id}>
+          <Td>{product.id}</Td>
+          <Td>{product.name}</Td>
+          <Td>{product.description}</Td>
+          <Td>Rp. {Number(product.price).toLocaleString("id-ID")}</Td>
+          <Td>{product.image}</Td>
+        </Tr>
+      );
+    });
   };
 
   useEffect(() => {
@@ -28,9 +51,20 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <Container>
-          <Heading>Hello world</Heading>
-        </Container>
+        <TableContainer>
+          <Table variant="striped">
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>name</Th>
+                <Th>description</Th>
+                <Th>price</Th>
+                <Th>image</Th>
+              </Tr>
+            </Thead>
+            <Tbody>{renderDataProducts()}</Tbody>
+          </Table>
+        </TableContainer>
       </main>
     </>
   );
