@@ -1,10 +1,18 @@
 const express = require("express");
 const prisma = require("../database/prisma.js");
+const {
+  getAllProducts,
+  getProductById,
+  addProduct,
+  updateProduct,
+  editProduct,
+  deleteProduct,
+} = require("./products.service.js");
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const products = await prisma.products.findMany();
+  const products = await getAllProducts();
   res
     .status(200)
     .json({ status: 200, message: "Success getting datas", datas: products });
@@ -12,17 +20,12 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const productId = req.params.id;
+  const product = await getProductById(productId);
 
-  const product = await prisma.products.findUnique({
-    where: {
-      id: productId,
-    },
-  });
-
-  if (!productId)
+  if (!product)
     res
       .status(404)
-      .json({ status: 404, message: `Cannot find id ${productId}` });
+      .json({ status: 404, message: "Cannot find product", product: {} });
 
   res
     .status(200)
@@ -31,15 +34,10 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const productsData = req.body;
+  const product = await addProduct(productsData);
 
-  const product = await prisma.products.create({
-    data: {
-      name: productsData.name,
-      description: productsData.description,
-      price: productsData.price,
-      image: productsData.image,
-    },
-  });
+  if (product.status === 404)
+    res.status(404).json({ status: 404, message: "Failed added data" });
 
   res.status(200).json({ message: "Success added data", product });
 });
@@ -47,31 +45,10 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const productId = req.params.id;
   const productsData = req.body;
+  const product = await updateProduct(productId, productsData);
 
-  if (
-    !(
-      productsData.name &&
-      productsData.description &&
-      productsData.price &&
-      productsData.image
-    )
-  ) {
-    res
-      .status(400)
-      .json({ status: 400, message: "Something data required is missing" });
-  }
-
-  const product = await prisma.products.update({
-    where: {
-      id: productId,
-    },
-    data: {
-      name: productsData.name,
-      description: productsData.description,
-      price: productsData.price,
-      image: productsData.image,
-    },
-  });
+  if (product.status === 400)
+    res.status(400).json({ status: 400, message: "Failed update data" });
 
   res.status(200).json({ message: "Success update data", product });
 });
@@ -80,28 +57,14 @@ router.patch("/:id", async (req, res) => {
   const productId = req.params.id;
   const productsData = req.body;
 
-  const product = await prisma.products.update({
-    where: {
-      id: productId,
-    },
-    data: {
-      name: productsData.name,
-      description: productsData.description,
-      price: productsData.price,
-      image: productsData.image,
-    },
-  });
+  const product = await editProduct(productId, productsData);
 
   res.status(200).json({ message: "Success update data", product });
 });
 
 router.delete("/:id", async (req, res) => {
   const productId = req.params.id;
-  await prisma.products.delete({
-    where: {
-      id: productId,
-    },
-  });
+  await deleteProduct(productId);
 
   res.status(200).json({ messages: "Success deleted data" });
 });
