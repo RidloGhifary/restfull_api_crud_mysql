@@ -3,8 +3,8 @@ const {
   getAllProducts,
   getProductById,
   addProduct,
-  updateProduct,
-  editProduct,
+  updateProductById,
+  editProductById,
   deleteProductById,
 } = require("./products.service.js");
 
@@ -26,6 +26,7 @@ router.get("/:id", async (req, res) => {
       .status(200)
       .json({ status: 200, message: "Success get product", product });
   } catch (err) {
+    console.log(err);
     res.status(400).json({ status: 400, message: err.message });
   }
 });
@@ -45,7 +46,7 @@ router.put("/:id", async (req, res) => {
   try {
     const productId = req.params.id;
     const productsData = req.body;
-    const product = await updateProduct(productId, productsData);
+    const product = await updateProductById(productId, productsData);
 
     res.status(200).json({ message: "Success update data", product });
   } catch (err) {
@@ -58,7 +59,7 @@ router.patch("/:id", async (req, res) => {
     const productId = req.params.id;
     const productsData = req.body;
 
-    const product = await editProduct(productId, productsData);
+    const product = await editProductById(productId, productsData);
 
     res.status(200).json({ message: "Success update data", product });
   } catch (err) {

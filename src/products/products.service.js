@@ -1,17 +1,18 @@
-const prisma = require("../database/prisma");
+const {
+  findAllProducts,
+  findProductById,
+  postProductSingle,
+  patchProductById,
+  deleteProductSingleById,
+} = require("./products.repository");
 
 const getAllProducts = async () => {
-  const getAllProducts = await prisma.products.findMany();
+  const getAllProducts = await findAllProducts();
   return getAllProducts;
 };
 
 const getProductById = async (id) => {
-  const getProductById = await prisma.products.findUnique({
-    where: {
-      id,
-    },
-  });
-
+  const getProductById = await findProductById(id);
   if (!getProductById) throw Error("product not found");
 
   return getProductById;
@@ -28,19 +29,22 @@ const addProduct = async (productData) => {
   )
     throw Error("Something required is missing");
 
-  const addProduct = await prisma.products.create({
-    data: {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      image: productData.image,
-    },
-  });
+  const addProduct = await postProductSingle(productData);
 
   return addProduct;
 };
 
-const updateProduct = async (id, productData) => {
+const editProductById = async (id, productData) => {
+  await getProductById(id);
+
+  const product = await patchProductById(id, productData);
+
+  if (!product) throw Error("Failed edit data");
+
+  return product;
+};
+
+const updateProductById = async (id, productData) => {
   if (
     !(
       productData.name &&
@@ -51,56 +55,21 @@ const updateProduct = async (id, productData) => {
   )
     throw Error("Something required is missing");
 
-  const product = await prisma.products.update({
-    where: {
-      id,
-    },
-    data: {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      image: productData.image,
-    },
-  });
-
-  return product;
-};
-
-const editProduct = async (id, productData) => {
-  await getProductById(id);
-
-  const product = await prisma.products.update({
-    where: {
-      id,
-    },
-    data: {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      image: productData.image,
-    },
-  });
-
-  if (!product) throw Error("Failed edit data");
-
+  const product = await editProductById(id, productData);
   return product;
 };
 
 const deleteProductById = async (id) => {
   await getProductById(id);
 
-  return await prisma.products.delete({
-    where: {
-      id,
-    },
-  });
+  return await deleteProductSingleById(id);
 };
 
 module.exports = {
   getAllProducts,
   getProductById,
   addProduct,
-  updateProduct,
-  editProduct,
+  updateProductById,
+  editProductById,
   deleteProductById,
 };
