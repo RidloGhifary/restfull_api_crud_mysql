@@ -1,12 +1,11 @@
 const express = require("express");
-const prisma = require("../database/prisma.js");
 const {
   getAllProducts,
   getProductById,
   addProduct,
   updateProduct,
   editProduct,
-  deleteProduct,
+  deleteProductById,
 } = require("./products.service.js");
 
 const router = express.Router();
@@ -19,54 +18,63 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const productId = req.params.id;
-  const product = await getProductById(productId);
+  try {
+    const productId = req.params.id;
+    const product = await getProductById(productId);
 
-  if (!product)
     res
-      .status(404)
-      .json({ status: 404, message: "Cannot find product", product: {} });
-
-  res
-    .status(200)
-    .json({ status: 200, message: "Success get product", product });
+      .status(200)
+      .json({ status: 200, message: "Success get product", product });
+  } catch (err) {
+    res.status(400).json({ status: 400, message: err.message });
+  }
 });
 
 router.post("/", async (req, res) => {
-  const productsData = req.body;
-  const product = await addProduct(productsData);
+  try {
+    const productsData = req.body;
+    const product = await addProduct(productsData);
 
-  if (product.status === 404)
-    res.status(404).json({ status: 404, message: "Failed added data" });
-
-  res.status(200).json({ message: "Success added data", product });
+    res.status(200).json({ message: "Success added data", product });
+  } catch (err) {
+    res.status(400).json({ status: 400, message: err.message });
+  }
 });
 
 router.put("/:id", async (req, res) => {
-  const productId = req.params.id;
-  const productsData = req.body;
-  const product = await updateProduct(productId, productsData);
+  try {
+    const productId = req.params.id;
+    const productsData = req.body;
+    const product = await updateProduct(productId, productsData);
 
-  if (product.status === 400)
-    res.status(400).json({ status: 400, message: "Failed update data" });
-
-  res.status(200).json({ message: "Success update data", product });
+    res.status(200).json({ message: "Success update data", product });
+  } catch (err) {
+    res.status(400).json({ status: 400, message: err.message });
+  }
 });
 
 router.patch("/:id", async (req, res) => {
-  const productId = req.params.id;
-  const productsData = req.body;
+  try {
+    const productId = req.params.id;
+    const productsData = req.body;
 
-  const product = await editProduct(productId, productsData);
+    const product = await editProduct(productId, productsData);
 
-  res.status(200).json({ message: "Success update data", product });
+    res.status(200).json({ message: "Success update data", product });
+  } catch (err) {
+    res.status(400).json({ status: 400, message: err.message });
+  }
 });
 
 router.delete("/:id", async (req, res) => {
-  const productId = req.params.id;
-  await deleteProduct(productId);
+  try {
+    const productId = req.params.id;
+    await deleteProductById(productId);
 
-  res.status(200).json({ messages: "Success deleted data" });
+    res.status(200).json({ messages: "Success deleted data" });
+  } catch (err) {
+    res.status(404).json({ status: 400, message: err.message });
+  }
 });
 
 module.exports = router;

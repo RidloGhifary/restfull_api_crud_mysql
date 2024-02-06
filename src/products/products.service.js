@@ -12,6 +12,8 @@ const getProductById = async (id) => {
     },
   });
 
+  if (!getProductById) throw Error("product not found");
+
   return getProductById;
 };
 
@@ -24,7 +26,7 @@ const addProduct = async (productData) => {
       productData.image
     )
   )
-    return { status: 404 };
+    throw Error("Something required is missing");
 
   const addProduct = await prisma.products.create({
     data: {
@@ -47,7 +49,7 @@ const updateProduct = async (id, productData) => {
       productData.image
     )
   )
-    return { status: 400 };
+    throw Error("Something required is missing");
 
   const product = await prisma.products.update({
     where: {
@@ -65,6 +67,8 @@ const updateProduct = async (id, productData) => {
 };
 
 const editProduct = async (id, productData) => {
+  await getProductById(id);
+
   const product = await prisma.products.update({
     where: {
       id,
@@ -77,10 +81,14 @@ const editProduct = async (id, productData) => {
     },
   });
 
+  if (!product) throw Error("Failed edit data");
+
   return product;
 };
 
-const deleteProduct = async (id) => {
+const deleteProductById = async (id) => {
+  await getProductById(id);
+
   return await prisma.products.delete({
     where: {
       id,
@@ -94,5 +102,5 @@ module.exports = {
   addProduct,
   updateProduct,
   editProduct,
-  deleteProduct,
+  deleteProductById,
 };
