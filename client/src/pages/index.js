@@ -29,6 +29,7 @@ import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { useCreateProduct } from "@/features/product/useCreateProduct";
 import { useDeleteProduct } from "@/features/product/useDeleteProduct";
+import { useEditProduct } from "@/features/product/useEditProduct";
 
 export default function Home() {
   const toast = useToast();
@@ -36,29 +37,49 @@ export default function Home() {
 
   const formik = useFormik({
     initialValues: {
+      id: "",
       name: "",
       price: "",
       description: "",
       image: "",
     },
     onSubmit: () => {
-      const { name, price, description, image } = formik.values;
-      createProduct({
-        name,
-        price,
-        description,
-        image,
-      });
+      const { name, price, description, image, id } = formik.values;
+      if (id) {
+        editProduct({
+          id,
+          name,
+          price,
+          description,
+          image,
+        });
+        toast({
+          title: "Success Edited",
+          status: "success",
+        });
+      } else {
+        createProduct({
+          name,
+          price,
+          description,
+          image,
+        });
+        toast({
+          title: "Success added",
+          status: "success",
+        });
+      }
       formik.resetForm({ values: "" });
-      toast({
-        title: "Success added",
-        status: "success",
-      });
     },
   });
 
   const { mutate: createProduct, isLoading: postProductIsLoading } =
     useCreateProduct({
+      onSuccess: () => [productRefetch()],
+    });
+
+  const { mutate: editProduct, isLoading: editProductIsLoading } =
+    useEditProduct({
       onSuccess: () => [productRefetch()],
     });
 
@@ -77,11 +98,24 @@ export default function Home() {
     if (isYes) deletedProduct(id);
   };
 
+  const onEditProduct = (product) => {
+    formik.setFieldValue("id", product.id);
+    formik.setFieldValue("name", product.name);
+    formik.setFieldValue("price", product.price);
+    formik.setFieldValue("description", product.description);
+    formik.setFieldValue("image", product.image);
+  };
+
   const renderDataProducts = () => {
     return products?.datas.map((product, index) => {
       return (
         <Tr key={product.id}>
           <Td>{index + 1}</Td>
+          <Td>
+            <Button colorScheme="teal" onClick={() => onEditProduct(product)}>
+              Edit
+            </Button>
+          </Td>
           <Td>
             <Button
               colorScheme="red"
@@ -109,11 +143,21 @@ export default function Home() {
       <main>
         <Container marginY={5}>
           <form onSubmit={formik.handleSubmit}>
+            <FormControl marginBottom={4}>
+              <Input
+                placeholder="Id product"
+                name="id"
+                onChange={formik.handleChange}
+                value={formik.values.id}
+                readOnly={true}
+              />
+            </FormControl>
             <FormControl isRequired>
               <SimpleGrid columns={2} spacing={10}>
                 <Input
                   placeholder="Name"
                   name="name"
+                  s
                   onChange={formik.handleChange}
                   value={formik.values.name}
                 />
@@ -140,7 +184,7 @@ export default function Home() {
                 colorScheme="gray"
                 marginTop={4}
                 type="submit"
-                isLoading={postProductIsLoading}
+                isLoading={postProductIsLoading || editProductIsLoading}
                 loadingText="Submitting">
                 Submit
               </Button>
@@ -152,6 +196,7 @@ export default function Home() {
             <Thead>
               <Tr>
                 <Th>No</Th>
+                <Th>Edit</Th>
                 <Th>Delete</Th>
                 <Th>Name</Th>
                 <Th>Price</Th>
