@@ -14,12 +14,21 @@ import {
   Button,
   SimpleGrid,
   useToast,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useFetchProduct } from "@/features/product/useProduct";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { useCreateProduct } from "@/features/product/useCreateProduct";
+import { useDeleteProduct } from "@/features/product/useDeleteProduct";
 
 export default function Home() {
   const toast = useToast();
@@ -34,7 +43,7 @@ export default function Home() {
     },
     onSubmit: () => {
       const { name, price, description, image } = formik.values;
-      mutate({
+      createProduct({
         name,
         price,
         description,
@@ -48,17 +57,38 @@ export default function Home() {
     },
   });
 
-  const { mutate, isLoading: postProductIsLoading } = useCreateProduct({
+  const { mutate: createProduct, isLoading: postProductIsLoading } =
+    useCreateProduct({
+      onSuccess: () => [productRefetch()],
+    });
+
+  const { mutate: deletedProduct } = useDeleteProduct({
     onSuccess: () => {
-      productRefetch();
+      productRefetch(),
+        toast({
+          title: "Success deleted",
+          status: "success",
+        });
     },
   });
+
+  const handleDeleteProduct = (id) => {
+    const isYes = confirm("Are you sre want to delete this item");
+    if (isYes) deletedProduct(id);
+  };
 
   const renderDataProducts = () => {
     return products?.datas.map((product, index) => {
       return (
         <Tr key={product.id}>
           <Td>{index + 1}</Td>
+          <Td>
+            <Button
+              colorScheme="red"
+              onClick={() => handleDeleteProduct(product.id)}>
+              Delete
+            </Button>
+          </Td>
           <Td>{product.name}</Td>
           <Td>Rp. {Number(product.price).toLocaleString("id-ID")}</Td>
           <Td>{product.description}</Td>
@@ -122,6 +152,7 @@ export default function Home() {
             <Thead>
               <Tr>
                 <Th>No</Th>
+                <Th>Delete</Th>
                 <Th>Name</Th>
                 <Th>Price</Th>
                 <Th>Description</Th>
