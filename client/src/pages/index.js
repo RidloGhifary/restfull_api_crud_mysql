@@ -8,11 +8,51 @@ import {
   Td,
   TableContainer,
   Spinner,
+  FormControl,
+  Input,
+  Container,
+  Button,
+  SimpleGrid,
+  useToast,
 } from "@chakra-ui/react";
 import { useFetchProduct } from "@/features/product/useProduct";
+import { useFormik } from "formik";
+import { useMutation } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios";
+import { useCreateProduct } from "@/features/product/useCreateProduct";
 
 export default function Home() {
-  const { products, isLoading } = useFetchProduct();
+  const toast = useToast();
+  const { products, isLoading, refetch: productRefetch } = useFetchProduct();
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      price: "",
+      description: "",
+      image: "",
+    },
+    onSubmit: () => {
+      const { name, price, description, image } = formik.values;
+      mutate({
+        name,
+        price,
+        description,
+        image,
+      });
+      formik.resetForm({ values: "" });
+      toast({
+        title: "Success added",
+        status: "success",
+      });
+    },
+  });
+
+  const { mutate, isLoading: postProductIsLoading } = useCreateProduct({
+    onSuccess: () => {
+      productRefetch();
+    },
+  });
 
   const renderDataProducts = () => {
     return products?.datas.map((product, index) => {
@@ -37,6 +77,46 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
+        <Container marginY={5}>
+          <form onSubmit={formik.handleSubmit}>
+            <FormControl isRequired>
+              <SimpleGrid columns={2} spacing={10}>
+                <Input
+                  placeholder="Name"
+                  name="name"
+                  onChange={formik.handleChange}
+                  value={formik.values.name}
+                />
+                <Input
+                  placeholder="Price"
+                  name="price"
+                  onChange={formik.handleChange}
+                  value={formik.values.price}
+                />
+                <Input
+                  placeholder="Description"
+                  name="description"
+                  onChange={formik.handleChange}
+                  value={formik.values.description}
+                />
+                <Input
+                  placeholder="Image Url"
+                  name="image"
+                  onChange={formik.handleChange}
+                  value={formik.values.image}
+                />
+              </SimpleGrid>
+              <Button
+                colorScheme="gray"
+                marginTop={4}
+                type="submit"
+                isLoading={postProductIsLoading}
+                loadingText="Submitting">
+                Submit
+              </Button>
+            </FormControl>
+          </form>
+        </Container>
         <TableContainer>
           <Table variant="striped">
             <Thead>
