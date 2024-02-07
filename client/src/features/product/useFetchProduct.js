@@ -1,7 +1,7 @@
 import { axiosInstance } from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 
-export const useFetchProduct = () => {
+export const useFetchProduct = ({ onError }) => {
   const {
     data: products,
     isLoading,
@@ -11,6 +11,8 @@ export const useFetchProduct = () => {
       const { data } = await axiosInstance.get("/products");
       return data;
     },
+    queryKey: ["fetch.products"],
+    onError,
   });
 
   return {

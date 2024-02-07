@@ -14,26 +14,33 @@ import {
   Button,
   SimpleGrid,
   useToast,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
-  AlertDialogCloseButton,
-  useDisclosure,
 } from "@chakra-ui/react";
-import { useFetchProduct } from "@/features/product/useProduct";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
-import { useCreateProduct } from "@/features/product/useCreateProduct";
-import { useDeleteProduct } from "@/features/product/useDeleteProduct";
-import { useEditProduct } from "@/features/product/useEditProduct";
+import {
+  useCreateProduct,
+  useEditProduct,
+  useDeleteProduct,
+  useFetchProduct,
+} from "@/features/product/index";
 
 export default function Home() {
   const toast = useToast();
-  const { products, isLoading, refetch: productRefetch } = useFetchProduct();
+  const {
+    products,
+    isLoading,
+    refetch: productRefetch,
+  } = useFetchProduct({
+    onError: () => {
+      toast({
+        title: "Server is buzy",
+        status: "error",
+        duration: "5000",
+        position: "top",
+      });
+    },
+  });
 
   const formik = useFormik({
     initialValues: {
